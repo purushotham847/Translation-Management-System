@@ -1,0 +1,439 @@
+{% load static %}
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewer Dashboard</title>
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <style>
+        /* Custom scrollbar styles */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #4a4a4a;
+            border-radius: 6px;
+            border: 3px solid #2d2d2d;
+        }
+
+        /* Creative border styles */
+        .creative-border {
+            border: 2px solid transparent;
+            background-image: linear-gradient(black, black), linear-gradient(to right, #ff7e5f, #feb47b);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+            border-radius: 12px;
+        }
+
+        /* Background image */
+        .bg-cover {
+            background-image: url('/static/images/background.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Button animations */
+        .animated-button {
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .animated-button:hover {
+            transform: scale(1.1);
+        }
+
+        /* Disabled button styles */
+        .disabled-button {
+            background-color: #4a4a4a;
+            /* Darker background for disabled state */
+            cursor: not-allowed;
+            /* Change cursor to indicate it's not clickable */
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .greeting-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 128, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none; /* Initially hidden */
+            z-index: 100; /* Ensure it appears above other content */
+        }
+        /* Prevent printing */
+        @media print {
+            body {
+                display: none !important;
+            }
+        }
+         #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            text-align: center;
+            padding-top: 20%;
+            font-size: 24px;
+            color: red;
+        }
+    </style>
+    <script>
+
+        function Batch(batchNumber) {
+            const istNow = new Date().toISOString();
+            fetch("{% url 'reviewerdashboard' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ batch_id: batchNumber, ist_now: istNow })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = `/reviewerdashboard/r_user_view/${batchNumber}/`;
+                    } else {
+                        alert("Failed to log batch access.");
+                    }
+                })
+                .catch(error => console.error("Error logging batch access:", error));
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateTimeString = now.toLocaleString();
+            document.getElementById('currentDateTime').innerText = dateTimeString;
+        }
+
+        function logout() {
+            window.location.href = 'reviewerLogin.html';
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+        function submitFeedback() {
+
+            const jobRows = document.querySelectorAll('tbody tr');
+            let allCompleted = true;
+
+            jobRows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(2)');
+                if (statusCell && statusCell.innerText.trim() !== 'Completed') {
+                    allCompleted = false;
+                }
+            });
+
+            if (!allCompleted) {
+                alert("Complete all the allocated jobs.");
+                return;
+            }
+
+            fetch("{% url 'reviewerdashboard' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ action: 'update_reviewer' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const greetingMessage = document.getElementById("greetingMessage");
+                if (data.status === 'success') {
+                    greetingMessage.innerText = "You completed jobs successfully!";
+                    greetingMessage.style.display = "block"; // Show the greeting message
+                    setTimeout(() => {
+                        greetingMessage.style.display = "none"; // Hide the greeting message after 4 seconds
+                        window.location.href = "/home"; // Redirect to home page
+                    }, 4000); // 4000 milliseconds = 4 seconds
+                } else {
+                    alert("Failed to update translator data.");
+                }
+            })
+            .catch(error => console.error("Error updating reviewer data:", error));
+        }
+
+
+
+
+
+
+        setInterval(updateDateTime, 1000);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            const logoutButton = document.getElementById('logoutButton');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', function () {
+                    const logoutTime = new Date().toISOString();
+                    fetch("{% url 'reviewerdashboard' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify({ action: 'logout', logout_time: logoutTime })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                window.location.href = "{% url 'home' %}";
+                            } else {
+                                alert('Logout failed. Please try again.');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            }
+        });
+
+
+
+        function quitJob() {
+    const confirmation = confirm("Are you sure you want to quit the current job?");
+    if (confirmation) {
+        const corpusId = "{{ reviewer.corpus_id }}";
+        const batchRange = "{{ reviewer.batch_range }}";
+        const batchIds = batchRange.split(',');
+
+
+        const data = {
+            corpus_id: corpusId,
+            batch_ids: batchIds,
+            action: 'quit_job',
+            reviewer_id: "{{ reviewer.t_id }}"
+        };
+
+        fetch("{% url 'reviewerdashboard' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert("You have successfully quit the job.");
+                window.location.href = "/home";
+            } else {
+                alert("Failed to quit the job. Please try again.");
+            }
+        })
+        .catch(error => console.error("Error quitting the job:", error));
+    }
+}
+
+         // Show overlay when Print Screen is detected
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'PrintScreen') {
+                document.getElementById('overlay').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('overlay').style.display = 'none';
+                }, 6000); // Hide overlay after 2 seconds
+            }
+        });
+
+        // Optional: Disable Ctrl+P (Print)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === 'p' || e.key === 'P')) {
+                e.preventDefault();
+                alert('Printing is disabled for this content.');
+            }
+        });
+        // Disable Right-Click
+        document.addEventListener('contextmenu', function (e) {
+            alert("Right-click is disabled on this page.");
+            e.preventDefault();
+        });
+
+        // Disable Developer Tools Shortcut
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || e.key === 'F12') {
+                e.preventDefault();
+                alert("Developer tools are disabled on this page.");
+            }
+        });
+
+
+         document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                alert("Save As is disabled for this page.");
+            }
+        });
+
+        // Prevent Page Source View (Ctrl+U)
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                alert("Viewing page source is disabled.");
+            }
+        });
+
+        function openProfileModal() {
+    document.getElementById('profileModal').style.display = 'flex'; // Show the modal
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none'; // Hide the modal
+}
+
+    </script>
+</head>
+
+<body class="bg-cover text-white h-screen flex flex-col justify-between">
+    <div class="greeting-message" id="greetingMessage">You completed jobs successfully!</div>
+    <div class="flex justify-between items-center p-4 bg-black bg-opacity-50">
+        <div class="text-2xl font-bold">Welcome back, {{ reviewer.r_name }}!</div>
+        <div class="flex items-center space-x-4">
+
+            <button
+                class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded animated-button"
+                onclick="window.location.href='{% url 'reviewer_login' %}'">Logout</button>
+            <button
+                class="bg-gradient-to-r from-purple-400 to-pink-500 text-white font-bold py-3 px-4 rounded-full animated-button"
+                onclick="openProfileModal()">R
+                <i class="fas fa-user"></i>
+            </button>
+        </div>
+    </div>
+    <div class="flex flex-1 items-start justify-center mt-5 bg-black bg-opacity-50">
+        <div class="p-1 overflow-y-auto custom-scrollbar" style="max-height: 600px;">
+            {% if allocated_jobs %}
+            <table style="width: 600px;" class="table-auto text-left border-collapse border border-gray-700 shadow-lg">
+                <thead>
+                    <tr class="bg-gray-900">
+                        <th class="border border-gray-700 px-4 py-2 rounded-tl-lg">BATCH</th>
+                        <th class="border border-gray-700 px-4 py-2">JOB STATUS</th>
+                        <th class="border border-gray-700 px-4 py-2 rounded-tr-lg">BATCH RATINGS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in allocated_jobs %}
+                    <tr
+                        class="{% cycle 'bg-gray-800' 'bg-gray-700' %} bg-opacity-30 hover:bg-gray-600 transition duration-300 ease-in-out">
+                        <td class="border border-gray-700 px-4 py-2">
+                            <button id="batchNumberInput" class="{% if job.r_flag == 'Y' %}bg-gray-500 text-white px-4 py-2 rounded animated-button cursor-not-allowed{% else %}bg-green-500 text-white px-4 py-2 rounded animated-button{% endif %}
+                                        {% if job.r_flag == 'Y' %}disabled{% endif %} "
+                                onclick="{% if job.r_flag != 'Y' %}Batch('{{ job.batch_id }}'){% endif %}">
+                                {{ job.batch_id }}
+                            </button>
+                        </td>
+                        <td class="border border-gray-700 px-4 py-2">
+                            {{ job.status }}
+                        </td>
+                        <td class="border border-gray-700 px-4 py-2">
+                            {% if job.t_rating %}
+                            {{ job.t_rating }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center p-8 bg-gray-800 rounded-lg shadow-lg">
+                <i class="fas fa-exclamation-circle text-4xl text-yellow-500 mb-4"></i>
+                <h2 class="text-2xl font-bold text-white mb-2">No Jobs Allocated</h2>
+                <p class="text-gray-300">You currently don't have any batches assigned to you.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- DateTime and Submit section -->
+        <div class="mt-5">
+            <div class="bg-gray-500 text-black px-5 py-2 rounded mb-4">
+                <div id="currentDateTime"></div>
+                <div>Deadline: {{ reviewer.deadline }}</div>
+                <div>Language Proficiency: {{ language_proficiency}}</div>
+            </div>
+            <button class="bg-lime-500 hover:bg-lime-600 text-black font-bold py-2 px-20 rounded animated-button mt-1" onclick="submitFeedback()">Submit</button>
+            {% if allocated_jobs|length > 0 %}
+    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-20 rounded animated-button mt-1"
+        onclick="quitJob()">Quit</button>
+    {% endif %}  
+      
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content text-black">
+            <span class="close" onclick="closeProfileModal()">&times;</span>
+            <h2 class="text-xl font-bold">Reviewer Profile</h2>
+            <p><strong>Name:</strong> {{ reviewer.r_name }}</p>
+            <p><strong>ID:</strong> {{ reviewer.r_id }}</p>
+            <p><strong>Email:</strong> {{ reviewer.email }}</p>
+            <p><strong>Language Proficiency:</strong> {{ reviewer.language_profeciency }}</p>
+            <p><strong>Deadline:</strong> {{ reviewer.deadline }}</p>
+        </div>
+    </div>
+</body>
+
+</html>

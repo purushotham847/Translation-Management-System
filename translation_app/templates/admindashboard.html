@@ -1,0 +1,682 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block content %}
+
+<div class="flex-grow p-8">
+    <div class="flex justify-between items-center mb-8">
+        <h2 id="dashboard-title" class="text-2xl font-bold text-white">Dashboard</h2>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-lg shadow" style="margin-bottom:20px; display: flex; flex-direction: row;">
+        <div>
+            <label class="text-white" for="major_id">Select Major ID:</label>
+            <select id="major_id" name="major_id" class="bg-gray-700 text-white rounded p-2"
+                onchange="updateJobCountsmajor(this.value,document.getElementById('dashboard-title').id)">
+                <option value="">Select Major ID </option>
+                {% for major in major_ids %}
+                <option value="{{ major.major_id }}">{{ major.language }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="margin-left: 10px;">
+            <label class="text-white" for="corpus_id">Select corpus ID:</label>
+            <select id="corpus_id" name="corpus_id" class="bg-gray-700 text-white rounded p-2"
+                onchange="updateJobCountsMC(this.value ,document.getElementById('dashboard-title').id)">
+                <!-- Added onchange event here -->
+                <option value="">Select corpus ID </option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                    src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="total_jobs"></h3>
+                    <p class="text-gray-400">Total Jobs</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="allotted_jobs"></h3>
+                    <p class="text-gray-400">Allotted Jobs</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="pending_jobs"></h3>
+                    <p class="text-gray-400">Pending Jobs</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="completed_jobs"></h3>
+                    <p class="text-gray-400">Completed Jobs</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="flex-grow p-8">
+    <div class="flex justify-between items-center mb-8">
+        <h2 id="file-title" class="text-2xl font-bold text-white">File Jobs</h2>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-lg shadow" style="margin-bottom:20px; display: flex; flex-direction: row;">
+        <div>
+            <label class="text-white" for="major_id">Select Major ID:</label>
+            <select id="major_id" name="major_id" class="bg-gray-700 text-white rounded p-2"
+                onchange="updateJobCountsmajor(this.value,document.getElementById('file-title').id)">
+                <option value="">Select Major ID </option>
+                {% for major in major_ids %}
+                <option value="{{ major.major_id }}">{{ major.language }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="margin-left: 10px;">
+            <label class="text-white" for="corpus_id">Select corpus ID:</label>
+            <select id="corpus_id_file" name="corpus_id" class="bg-gray-700 text-white rounded p-2"
+                onchange="updateJobCountsMC(this.value ,document.getElementById('file-title').id)">
+                <option value="">Select corpus ID </option>
+            </select>
+        </div>
+        <div style="margin-left: 10px;">
+            <label class="text-white" for="major_id_file">Select FileName:</label>
+            <select id="corpus_id_filenames" name="corpus_id" class="bg-gray-700 text-white rounded p-2"
+                onchange="updateJobCounts_filenames(this,document.getElementById('file-title').id)">
+                <option value="">Select corpus ID </option>
+            </select>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-6 mb-8">
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="total_jobs_file"></h3>
+                    <p class="text-gray-400">Total Jobs</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="allotted_jobs_file"></h3>
+                    <p class="text-gray-400">Allotted Jobs</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="pending_jobs_file"></h3>
+                    <p class="text-gray-400">Pending Jobs</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-lg shadow">
+            <div class="flex items-center mb-4">
+                <img alt="Icon" class="mr-4" height="40"
+                src="/static/images/home.jpg"
+                    width="40" />
+                <div>
+                    <h3 class="text-3xl font-bold text-white" id="completed_jobs_file"></h3>
+                    <p class="text-gray-400">Completed Jobs</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-6">
+    <div class="bg-gray-800 p-1 rounded-lg shadow">
+        <h3 id="translator-title" class=" text-lg font-bold mb-4 text-white">Translator</h3>
+        <div class="bg-gray-800 p-1 rounded-lg shadow" style="display: flex; flex-direction: row;">
+            <div>
+                <label class="text-white" for="major_id_translator">Select Major ID:</label>
+                <select id="major_id_translator" name="major_id_translator" class="bg-gray-700 text-white rounded p-2"
+                    onchange="updateJobCountsmajor(this.value,document.getElementById('translator-title').id)">
+                    <option value="">Select Major ID </option>
+                    {% for major in major_ids %}
+                    <option value="{{ major.major_id }}">{{ major.language }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-left: 10px;">
+                <label class="text-white" for="corpus_id_translator">Select corpus ID:</label>
+                <select id="corpus_id_translator" name="corpus_id_translator" class="bg-gray-700 text-white rounded p-2"
+                    onchange="updateJobCountsMC(this.value,document.getElementById('translator-title').id)">
+                    <!-- Added onchange event here -->
+                    <option value="">Select corpus ID </option>
+                </select>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+            <div class="text-center">
+                <div class="relative mx-auto mb-2 w-24 h-24">
+                    <svg class="absolute top-0 left-0 w-full h-full" viewbox="0 0 36 36">
+                        <circle class="text-gray-700 stroke-current" cx="18" cy="18" fill="none" r="15.9155"
+                            stroke-width="4"></circle>
+                        <circle id="circle-completed-translator" class="text-green-400 stroke-current" cx="18" cy="18"
+                            fill="none" r="15.9155" stroke-dasharray="0 , 0" stroke-width="4"></circle>
+                    </svg>
+                    <div id="completed_jobs_translator"
+                        class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+
+                        0
+
+                    </div>
+                </div>
+                <p class="text-gray-400">Completed Jobs</p>
+            </div>
+            <div class="text-center">
+                <div class="relative mx-auto mb-2 w-24 h-24">
+                    <svg class="absolute top-0 left-0 w-full h-full" viewbox="0 0 36 36">
+                        <circle class="text-gray-700 stroke-current" cx="18" cy="18" fill="none" r="15.9155"
+                            stroke-width="4"></circle>
+                        <circle id="circle-pending-translator" class="text-blue-400 stroke-current" cx="18" cy="18"
+                            fill="none" r="15.9155" stroke-dasharray="0 , 0 " stroke-width="4"></circle>
+                    </svg>
+                    <div id="pending_jobs_translator"
+                        class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+
+                        0
+
+                    </div>
+                </div>
+                <p class="text-gray-400">Pending Jobs</p>
+            </div>
+            <div class="text-center">
+                <div class="relative mx-auto mb-2 w-24 h-24">
+                    <svg class="absolute top-0 left-0 w-full h-full" viewbox="0 0 36 36">
+                        <circle class="text-gray-700 stroke-current" cx="18" cy="18" fill="none" r="15.9155"
+                            stroke-width="4"></circle>
+                        <circle id="circle-allotted-translator" class="text-red-400 stroke-current" cx="18" cy="18"
+                            fill="none" r="15.9155" stroke-dasharray="0,0" stroke-width="4"></circle>
+                    </svg>
+                    <div id="allotted_jobs_translator"
+                        class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+
+                        0
+
+                    </div>
+                </div>
+                <p class="text-gray-400">Allotted Jobs</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-20  grid grid-cols-1 gap-6">
+    <div class="bg-gray-800 p-1 rounded-lg shadow">
+        <h3 id="reviewer-title" class="text-lg font-bold mb-4 text-white">Reviewer</h3>
+        <div class="bg-gray-800 p-1 rounded-lg shadow" style="display: flex; flex-direction: row;">
+            <div>
+                <label class="text-white" for="major_id_reviewer">Select Major ID:</label>
+                <select id="major_id_reviewer" name="major_id_reviewer" class="bg-gray-700 text-white rounded p-2"
+                    onchange="updateJobCountsmajor(this.value,document.getElementById('reviewer-title').id)">
+                    <option value="">Select Major ID </option>
+                    {% for major in major_ids %}
+                    <option value="{{ major.major_id }}">{{ major.language }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-left: 10px;">
+                <label class="text-white" for="corpus_id_reviewer">Select Corpus ID:</label>
+                <select id="corpus_id_reviewer" name="corpus_id_reviewer" class="bg-gray-700 text-white rounded p-2"
+                    onchange="updateJobCountsMC(this.value,document.getElementById('reviewer-title').id)">
+                    <option value="">Select Corpus ID </option>
+                </select>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+            <div class="text-center">
+                <div class="relative mx-auto mb-2 w-24 h-24">
+                    <svg class="absolute top-0 left-0 w-full h-full" viewbox="0 0 36 36">
+                        <circle class="text-gray-700 stroke-current" cx="18" cy="18" fill="none" r="15.9155"
+                            stroke-width="4"></circle>
+                        <circle id="circle-completed-reviewer" class="text-green-400 stroke-current" cx="18" cy="18"
+                            fill="none" r="15.9155" stroke-dasharray="0 , 0 " stroke-width="4"></circle>
+                    </svg>
+                    <div id="completed_jobs_reviewer"
+                        class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+                        0
+                    </div>
+                </div>
+                <p class="text-gray-400">Completed Jobs</p>
+            </div>
+            <div class="text-center">
+                <div class="relative mx-auto mb-2 w-24 h-24">
+                    <svg class="absolute top-0 left-0 w-full h-full" viewbox="0 0 36 36">
+                        <circle class="text-gray-700 stroke-current" cx="18" cy="18" fill="none" r="15.9155"
+                            stroke-width="4"></circle>
+                        <circle id="circle-pending-reviewer" class="text-blue-400 stroke-current" cx="18" cy="18"
+                            fill="none" r="15.9155" stroke-dasharray="0 , 0 " stroke-width="4"></circle>
+                    </svg>
+                    <div id="pending_jobs_reviewer"
+                        class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+                        0
+                    </div>
+                </div>
+                <p class="text-gray-400">Pending Jobs</p>
+            </div>
+            <div class="text-center">
+                <div class="relative mx-auto mb-2 w-24 h-24">
+                    <svg class="absolute top-0 left-0 w-full h-full" viewbox="0 0 36 36">
+                        <circle class="text-gray-700 stroke-current" cx="18" cy="18" fill="none" r="15.9155"
+                            stroke-width="4"></circle>
+                        <circle id="circle-allotted-reviewer" class="text-red-400 stroke-current" cx="18" cy="18"
+                            fill="none" r="15.9155" stroke-dasharray="0 , 0 " stroke-width="4"></circle>
+                    </svg>
+                    <div id="allotted_jobs_reviewer"
+                        class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+                        0
+                    </div>
+                </div>
+                <p class="text-gray-400">Allotted Jobs</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gray-900 text-white">
+        <div class="mt-20 grid grid-cols-1 gap-6">
+            <div class="bg-gray-800 p-2 rounded-lg shadow">
+                <h3 id="completed-title" class="text-lg font-bold mb-4 text-white">Completed Jobs</h3>
+                <div class="flex mb-4">
+                    <div class="mr-4">
+                        <label class="text-white" for="major_id_completed">Select Major ID:</label>
+                        <select id="major_id_completed" name="major_id_completed"
+                            class="bg-gray-700 text-white rounded p-2"
+                            onchange="updateJobCountsmajor(this.value,document.getElementById('completed-title').id)">
+                            <option value="">Select Major ID</option>
+                            {% for major in major_ids %}
+                            <option value="{{ major.major_id }}">{{ major.language }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-white" for="corpus_id_completed">Select Corpus ID:</label>
+                        <select id="corpus_id_completed" name="corpus_id_completed"
+                            class="bg-gray-700 text-white rounded p-2"
+                            onchange="updateJobCountsMC(this.value,document.getElementById('completed-title').id)">
+                            <option value="">Select Corpus ID</option>
+                            {% for corpus in corpus_ids %}
+                            <option value="{{ corpus.corpus_id }}">{{ corpus.corpus_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <table class="min-w-full divide-y divide-gray-700">
+                        <thead>
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Translation-Direction</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    original-Filename</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    generated-Filename</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    import-Date</th>
+
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                    Download</th>
+                            </tr>
+                        </thead>
+                        <tbody id="completed-body" class="bg-gray-800 divide-y divide-gray-700">
+                            {% for job in job_data %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.language_proficiency}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.originalfilename}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.generatedfilename}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.importdate}</td>
+
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                 <a href="{% url 'custom_admin_login' %}?text=exporting&redirect_url={% url 'download_csv' job.major_job_id %}"
+                                    class="text-blue-400 hover:text-blue-600 ml-4">Export in CSV</a>
+                                </td>
+                            </tr>
+
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-sm text-gray-300 text-center">Select Major id and
+                                    corpus id</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+
+
+    let currentmajorid = ""
+    let corpusSelect, total, allotted, pending, completed;
+
+
+
+    function updateJobCountsmajor(majorId, title) {
+        
+        if (title == "dashboard-title") {
+            corpusSelect = document.getElementById('corpus_id');
+            total = 'total_jobs';
+            allotted = 'allotted_jobs';
+            pending = 'pending_jobs';
+            completed = 'completed_jobs';
+        }else if(title == "file-title") {
+            corpusSelect = document.getElementById('corpus_id_file');
+            total = 'total_jobs_file';
+            allotted = 'allotted_jobs_file';
+            pending = 'pending_jobs_file';
+            completed = 'completed_jobs_file';
+        }
+         else if (title == "translator-title") {
+            corpusSelect = document.getElementById('corpus_id_translator');
+            allotted = 'allotted_jobs_translator';
+            pending = 'pending_jobs_translator';
+            completed = 'completed_jobs_translator';
+        } else if (title == "reviewer-title") {
+            corpusSelect = document.getElementById('corpus_id_reviewer');
+            allotted = 'allotted_jobs_reviewer';
+            pending = 'pending_jobs_reviewer';
+            completed = 'completed_jobs_reviewer';
+        } else if (title == 'completed-title') {
+            corpusSelect = document.getElementById('corpus_id_completed');
+
+        }
+        
+        
+        if (majorId) {
+            currentmajorid = majorId
+            fetch(`/api/job_counts_M/${majorId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (title == 'dashboard-title') {
+                        document.getElementById(total).innerText = data.total_jobs;
+                        document.getElementById(allotted).innerText = data.allotted_jobs;
+                        document.getElementById(pending).innerText = data.pending_jobs;
+                        document.getElementById(completed).innerText = data.completed_jobs;
+                    }else if(title == 'file-title') {
+                        document.getElementById(total).innerText = data.total_jobs_file;
+                        document.getElementById(allotted).innerText = data.allotted_jobs_file;
+                        document.getElementById(pending).innerText = data.pending_jobs_file;
+                        document.getElementById(completed).innerText = data.completed_jobs_file;
+                    } else if (title == 'translator-title') {
+                        document.getElementById(allotted).innerText = data.allotted_jobs_translator;
+                        document.getElementById(pending).innerText = data.pending_jobs_translator;
+                        document.getElementById(completed).innerText = data.completed_jobs_translator;
+                        document.querySelector('#circle-allotted-translator').setAttribute('stroke-dasharray', updateCircle(data.allotted_jobs_translator, data.allotted_jobs_translator));
+                        document.querySelector('#circle-pending-translator').setAttribute('stroke-dasharray', updateCircle(data.pending_jobs_translator, data.allotted_jobs_translator));
+                        document.querySelector('#circle-completed-translator').setAttribute('stroke-dasharray', updateCircle(data.completed_jobs_translator, data.allotted_jobs_translator));
+                    } else if (title == 'reviewer-title') {
+                        document.getElementById(allotted).innerText = data.allotted_jobs_reviewer;
+                        document.getElementById(pending).innerText = data.pending_jobs_reviewer;
+                        document.getElementById(completed).innerText = data.completed_jobs_reviewer;
+                        document.querySelector('#circle-allotted-reviewer').setAttribute('stroke-dasharray', updateCircle(data.allotted_jobs_reviewer, data.allotted_jobs_reviewer));
+                        document.querySelector('#circle-pending-reviewer').setAttribute('stroke-dasharray', updateCircle(data.pending_jobs_reviewer, data.allotted_jobs_reviewer));
+                        document.querySelector('#circle-completed-reviewer').setAttribute('stroke-dasharray', updateCircle(data.completed_jobs_reviewer, data.allotted_jobs_reviewer));
+                    } else if (title == "completed-title") {
+                        const tableBody = document.getElementById('completed-body');
+                        tableBody.innerHTML = '';
+
+
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                               <tr>
+                                <td colspan="3" class="px-6 py-4 text-sm text-gray-300 text-center">Select corpus id</td>
+                            </tr>
+                            `;
+                        tableBody.appendChild(row);
+
+
+                    }
+                })
+                .catch(error => console.error('Error fetching job counts:', error));
+
+            
+            fetch(`/api/get_corpus_of_major/${majorId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    corpusSelect.innerHTML = '';
+                    
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '-- Select corpus ID --';
+                    corpusSelect.appendChild(defaultOption);
+                    
+                    if (data.corpus_ids && data.corpus_ids.length > 0) {
+                        data.corpus_ids.forEach(corpus => {
+                            const option = document.createElement('option');
+                            option.value = corpus.corpus_id;
+                            option.textContent = corpus.language_profeciency;
+                            corpusSelect.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = '-- No corpus found --';
+                        corpusSelect.appendChild(option);
+                    }
+                })
+                .catch(error => console.error('Error fetching corpus IDs:', error));
+        }
+    }
+    function updateCircle(completedJobs, totalJobs) {
+        const radius = 15.9155;
+        const circumference = 2 * Math.PI * radius;
+
+
+        const percentage = (completedJobs / totalJobs) * 100;
+
+
+        const filled = (percentage / 100) * circumference;
+        const unfilled = circumference - filled;
+
+
+
+        return `${filled}, ${unfilled}`;
+    }
+
+    function updateJobCountsMC(corpusID, title) {
+        
+        
+
+        fetch(`/api/job_counts_MC/${currentmajorid}/${corpusID}/`)
+
+
+            .then(response => response.json())
+            .then(data => {
+                
+                if (title == 'dashboard-title') {
+                    document.getElementById(total).innerText = data.total_jobs;
+                    document.getElementById(allotted).innerText = data.allotted_jobs;
+                    document.getElementById(pending).innerText = data.pending_jobs;
+                    document.getElementById(completed).innerText = data.completed_jobs;
+
+                }
+                if (title == 'file-title') {
+
+                    corpusSelect = document.getElementById('corpus_id_filenames');
+                    document.getElementById(total).innerText = data.total_jobs_file;
+                    document.getElementById(allotted).innerText = data.allotted_jobs_file;
+                    document.getElementById(pending).innerText = data.pending_jobs_file;
+                    document.getElementById(completed).innerText = data.completed_jobs_file;
+
+                    const textToSend='file-title'
+                    const encodedText = encodeURIComponent(textToSend);
+                    fetch(`/api/get_corpus_of_major/${corpusID}/?text=${encodedText}`)
+                         .then(response => response.json())
+                         .then(data => {
+                            
+                    corpusSelect.innerHTML = '';
+
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '-- Select corpus ID --';
+                    corpusSelect.appendChild(defaultOption);
+                    
+
+                    if (data.file_names && data.file_names.length > 0) {
+                        data.file_names.forEach(corpus => {
+                            const option = document.createElement('option');
+                            option.value = corpus.id;
+                            option.textContent = corpus.original_file_name;
+                            corpusSelect.appendChild(option);
+                           
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = '-- No corpus found --';
+                        corpusSelect.appendChild(option);
+                    }
+                })
+                .catch(error => console.error('Error fetching corpus IDs:', error));
+       
+                }
+                if (title == 'translator-title') {
+
+                    document.querySelector('#circle-allotted-translator').setAttribute('stroke-dasharray', updateCircle(data.allotted_jobs_translator, data.allotted_jobs_translator));
+                    document.querySelector('#circle-pending-translator').setAttribute('stroke-dasharray', updateCircle(data.pending_jobs_translator, data.allotted_jobs_translator));
+                    document.querySelector('#circle-completed-translator').setAttribute('stroke-dasharray', updateCircle(data.completed_jobs_translator, data.allotted_jobs_translator));
+
+                    document.getElementById(allotted).innerText = data.allotted_jobs_translator;
+                    document.getElementById(pending).innerText = data.pending_jobs_translator;
+                    document.getElementById(completed).innerText = data.completed_jobs_translator;
+                }
+                if (title == 'reviewer-title') {
+
+
+                    document.getElementById(allotted).innerText = data.allotted_jobs_reviewer;
+                    document.getElementById(pending).innerText = data.pending_jobs_reviewer;
+                    document.getElementById(completed).innerText = data.completed_jobs_reviewer;
+                    document.querySelector('#circle-allotted-reviewer').setAttribute('stroke-dasharray', updateCircle(data.allotted_jobs_reviewer, data.allotted_jobs_reviewer));
+                    document.querySelector('#circle-pending-reviewer').setAttribute('stroke-dasharray', updateCircle(data.pending_jobs_reviewer, data.allotted_jobs_reviewer));
+                    document.querySelector('#circle-completed-reviewer').setAttribute('stroke-dasharray', updateCircle(data.completed_jobs_reviewer, data.allotted_jobs_reviewer));
+
+                }
+                else if (title == "completed-title") {
+                  
+                const tableBody = document.getElementById('completed-body');
+                tableBody.innerHTML = '';
+              
+                
+                if (data.job_data && data.job_data.length > 0 ) {
+                
+                    Object.values(data.job_data).forEach(job => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.language_proficiency}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.originalfilename}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.generatedfilename}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${job.importdate}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                <a href="/download_csv/${job.major_job_id}/${job.corpus_id}/${job.filenumber}" class="text-blue-400 hover:text-blue-600 ml-4">Download CSV</a>
+                                
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-sm text-gray-300 text-center">No completed jobs available</td>
+                        </tr>
+                    `;
+                }
+            }
+        })
+            .catch(error => console.error('Error fetching job counts:', error));
+ 
+ 
+        }
+
+        function updateJobCounts_filenames(selectElement,title) {
+           
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+
+
+const fileNumber = selectedOption.value;
+
+
+const fileName = selectedOption.textContent;
+
+
+
+
+
+
+fetch(`/api/job_counts_filenames/${fileNumber}/${fileName}/`)
+
+
+.then(response => response.json())
+.then(data => {
+    
+    
+    document.getElementById(total).innerText = data.total_jobs_file;
+    document.getElementById(allotted).innerText = data.allotted_jobs_file;
+    document.getElementById(pending).innerText = data.pending_jobs_file;
+    document.getElementById(completed).innerText = data.completed_jobs_file;
+})
+.catch(error => console.error('Error fetching job counts:', error));
+
+        }
+
+</script>
+
+{%endblock%}

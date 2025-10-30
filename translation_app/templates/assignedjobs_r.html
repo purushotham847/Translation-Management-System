@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{% load static %}
+<head>
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <style>
+        .active {
+            background-color: #22c55e; /* Tailwind green-500 */
+            color: black;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-in-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 font-roboto">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-40 bg-gray-800 text-white h-screen p-4 slide-in">
+            <h1 class="text-2xl font-bold mb-6">Language Translations</h1>
+            <div class="mb-4">
+                <h2 class="text-lg font-semibold mb-2">TRANSLATIONS</h2>
+                <button id="jobAssignmentBtn" class="bg-green-500 text-black px-4 py-2 mb-2 w-full hover:bg-green-600 transition">JOB ASSIGNMENT</button>
+                <button id="assignedJobsBtn" class="bg-black text-white px-4 py-2 mb-2 w-full hover:bg-gray-700 transition">
+                    <a href="{% url 'assigned_jobs_r' %}">Assigned Jobs</a>
+                </button>
+                <button id="allocateJobBtn" class="bg-black text-white px-4 py-2 mb-2 w-full hover:bg-gray-700 transition">
+                    <a href="{% url 'allocate_job_r' %}">Allocate Job</a>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <h1 class="text-3xl font-bold mb-3">Assigned Jobs</h1>
+            <div class="overflow-x-auto">
+                <table class="w-full bg-gray-800 text-white">
+                    <thead>
+                        <tr>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Slno</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">ID</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Name</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Email</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Language Proficiency</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Major Job ID</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Creation Date</th>
+                            <th class="border-b border-gray-600 py-2 border-r border-gray-600">Deadline</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if reviewers %}
+                            {% for reviewer in reviewers %}
+                            <tr class="hover:bg-gray-700 transition">
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ forloop.counter }}</td>
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.r_id }}</td>
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.r_name }}</td>
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.email }}</td>
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.language_profeciency }}</td>
+                                <td class=" border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.major_job_id }}</td>
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.creation_date }}</td>
+                                <td class="border-b border-gray-600 py-2 border-r border-gray-600">{{ reviewer.deadline }}</td>
+
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="border-b border-gray-600 py-2 text-center">No assigned jobs found.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}

@@ -1,0 +1,277 @@
+
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewer Dashboard</title>
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <!-- Include Keyman Web -->
+    <script src="{% static 'keyman/keymanweb.js' %}"></script>
+    <script src="{% static 'keyman/kmwuitoggle.js' %}"></script>
+
+    <style>
+        body {
+            background: url('/static/images/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .button-wrapper {
+            text-align: right;
+        }
+        .btn-animated {
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .btn-animated:hover {
+            background-color: #4a5568;
+            transform: scale(1.05);
+        }
+        .table-dark {
+            background-color: #1a202c;
+            color: #cbd5e0;
+        }
+        .table-dark input, .table-dark textarea {
+            background-color: #2d3748;
+            color: #cbd5e0;
+            border: none;
+            padding: 0.5rem;
+            width: 100%;
+        }
+        /* Prevent printing */
+        @media print {
+            body {
+                display: none !important;
+            }
+        }
+         #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            text-align: center;
+            padding-top: 20%;
+            font-size: 24px;
+            color: red;
+        }
+    </style>
+</head>
+<body class="text-white font-mono">
+    <div class="container mx-auto p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-lg">Batch: {{ batch_id }}</h1>
+            <span>Language Proficiency: {{ language_proficiency }}</span>
+            <button id="backBtn" class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 px-4 py-2 rounded btn-animated">Back</button>
+        </div>
+        <div class="flex space-x-4 ">
+            <div class="flex-1 ">
+                <table class="table-auto w-full table-dark rounded shadow-lg h-full">
+                    <thead>
+                        <tr class="bg-gray-700 ">
+                            <th class="px-4 py-2">SL No</th>
+                            <th class="px-4 py-2 w-1/4">Source text</th>
+                            <th class="px-4 py-2 w-1/3">Translator text</th>
+                            <th class="px-4 py-2 w-1/3">Target text</th>
+                            <th class="px-4 py-2">Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if jobs %}
+                            {% for job in jobs %}
+                                <tr>
+                                    <td class="border px-4 py-2">{{ forloop.counter }}</td>
+                                    <td class="border px-4 py-2">{{ job.source_data }}</td>
+                                    <td class="border px-4 py-2">{{ job.t_target_data }}</td>
+                                    <td class="border px-4 py-2">
+                                        <textarea class="target-textarea" data-sen-id="{{ job.sen_id }}" required>{{ job.t_target_data }}</textarea>
+                                    </td>
+                                    <td class="border px-4 py-2">
+                                        <input type="number" class="w-full rating-input" min="1" max="10" step="1" required title="Please enter a number between 1 and 10">
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="border px-4 py-2 text-center">No jobs found for this batch.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <div class="button-wrapper flex items-center space-x-2">
+                    <textarea id="review-input" placeholder="Enter your review here..." class="placeholder-black bg-lime-500 text-white font-bold py-2 px-4 rounded animated-button mt-1" rows="3"></textarea>
+                    <button class="bg-lime-500 hover:bg-lime-600 text-black font-bold py-2 px-4 rounded animated-button mt-1" onclick="submitTargetTexts()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+     const targetTextareas = document.querySelectorAll('.target-textarea');
+            const language = "{{ target_lang }}";
+            const keyboard_id = "{{ keyboard_id|escapejs }}";
+            const keyboard_name = "{{ keyboard_name|escapejs }}";
+            const language_id = "{{ language_id|escapejs }}";
+            const language_name = "{{ language_name|escapejs }}";
+            const keyboard_filename="{{ keyboard_filename|escapejs }}";
+            const keyboard_filepath = `/static/keyman/languages/${keyboard_filename}.js`;
+            
+
+            
+            window.addEventListener('load', function() {
+            if (typeof keyman === 'undefined') {
+                console.error('Keyman is not loaded. Check the script path: {% static "keyman/keymanweb.js" %}');
+                return;
+            }
+
+            // Initialize Keyman
+            keyman.init({
+                attachType: 'auto',
+                resources: '/static/keyman'
+            }).then(() => {
+                // Add the keyboard once after initialization
+                keyman.addKeyboards({
+                    id: keyboard_id,
+                    name: keyboard_name,
+                    languages: {
+                        id: language_id,
+                        name: language_name
+                    },
+                    filename: keyboard_filepath
+                }).then(() => {
+                    console.log('Keyboard loaded:', { id: keyboard_id, name: keyboard_name, language_id, language_name, filename: keyboard_filename, filepath:keyboard_filepath });
+
+                    // Attach keyboard to all target textareas
+                    const targetTextareas = document.querySelectorAll('.target-textarea');
+                    targetTextareas.forEach(textarea => {
+                        keyman.setActiveElement(textarea); // Ensure Keyman activates on focus
+                        textarea.addEventListener('focus', () => {
+                            keyman.setActiveElement(textarea);
+                        });
+                    });
+                }).catch(err => {
+                    console.error('Error adding keyboard:', err);
+                });
+            }).catch(err => {
+                console.error('Keyman initialization failed:', err);
+            });
+        });
+    // Function to submit target texts
+    function submitTargetTexts() {
+        const targetTextareas = document.querySelectorAll('.target-textarea');
+        const ratingInputs = document.querySelectorAll('.rating-input');
+        const targetTexts = Array.from(targetTextareas).map(textarea => textarea.value.trim());
+        const senIds = Array.from(targetTextareas).map(textarea => textarea.getAttribute('data-sen-id'));
+        const ratings = Array.from(ratingInputs).map(input => input.value.trim());
+        const reviewInput = document.getElementById('review-input').value.trim();
+
+        // Check if any target text area or rating input is empty
+        if (targetTexts.some(text => text === '') || ratings.some(rating => rating === '')) {
+            alert('Please fill in all target texts and ratings.');
+            return;
+        }
+
+        // Prepare data for submission
+        const batchId = "{{ batch_id }}";
+        const data = {
+            'target_texts': targetTexts,
+            'sen_ids': senIds,
+            'ratings': ratings,
+            'review': reviewInput // Include ratings in the data
+        };
+
+        // Send AJAX POST request
+        fetch("{% url 'r_user_view' batch_id=batch_id %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Data submitted successfully!');
+                window.location.href = "{% url 'reviewerdashboard' %}";
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the data.');
+        });
+    }
+
+    // Back button functionality
+    document.getElementById('backBtn').addEventListener('click', function() {
+        window.history.back();
+    });
+  // Show overlay when Print Screen is detected
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'PrintScreen') {
+                document.getElementById('overlay').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('overlay').style.display = 'none';
+                }, 6000); // Hide overlay after 2 seconds
+            }
+        });
+
+        // Optional: Disable Ctrl+P (Print)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === 'p' || e.key === 'P')) {
+                e.preventDefault();
+                alert('Printing is disabled for this content.');
+            }
+        });
+        // Disable Right-Click
+        document.addEventListener('contextmenu', function (e) {
+            alert("Right-click is disabled on this page.");
+            e.preventDefault();
+        });
+
+        // Disable Developer Tools Shortcut
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || e.key === 'F12') {
+                e.preventDefault();
+                alert("Developer tools are disabled on this page.");
+            }
+        });
+
+
+         document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                alert("Save As is disabled for this page.");
+            }
+        });
+
+        // Prevent Page Source View (Ctrl+U)
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                alert("Viewing page source is disabled.");
+            }
+        });
+
+        function openProfileModal() {
+    document.getElementById('profileModal').style.display = 'flex'; // Show the modal
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none'; // Hide the modal
+}
+
+
+    </script>
+</body>
+</html>

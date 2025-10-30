@@ -1,0 +1,12 @@
+(function () {
+    // Using Bowser to parse browser details
+    const browser = bowser.getParser(window.navigator.userAgent);
+    const browserName = browser.getBrowserName();
+
+    if (browserName === 'Chrome') {
+        console.log("Access granted: Chrome browser detected.");
+    } else {
+        alert("Access restricted: This application works only on Google Chrome.");
+        window.location.href = "/unsupported-browser/";
+    }
+})();

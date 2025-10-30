@@ -1,0 +1,14 @@
+
+__pycache__/
+*.pyc
+
+
+.env
+
+
+translation_project/settings.py
+
+
+
+.vscode/
+.idea/

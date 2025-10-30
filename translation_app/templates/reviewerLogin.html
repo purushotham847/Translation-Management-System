@@ -1,0 +1,55 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Translator - Reviewer Login</title>
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            background-image: url('/static/images/background.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .neon-button {
+            background: linear-gradient(90deg, #00ff00, #00ffff, #ff00ff, #ff0000);
+            background-size: 400% 400%;
+            animation: gradientAnimation 5s ease infinite;
+        }
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+  
+    <div class="relative z-10 w-full max-w-md p-8 bg-black bg-opacity-50 rounded-lg shadow-lg">
+        <h2 class="mb-6 text-2xl font-semibold text-center text-white">Reviewer Login</h2>
+        <form action="{% url 'reviewer_login' %}" method="POST">
+            {% csrf_token %}
+            <div class="mb-4">
+                <input type="text" name="username" placeholder="User Id" class="w-full px-4 py-2 text-gray-300 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-6">
+                <input type="password" name="password" placeholder="Password" class="w-full px-4 py-2 text-gray-300 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <button type="submit" class="neon-button w-full px-4 py-2 text-white rounded hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500">Login</button>
+            </div>
+            {% if error %}
+                <p class="text-red-500 text-center">{{ error }}</p>
+            {% endif %}
+        </form>
+    </div>
+</body>
+</html>

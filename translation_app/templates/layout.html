@@ -1,0 +1,84 @@
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <style>
+        .profile-popup {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background-color: #2d3748;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .profile-popup p {
+            margin: 0;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 font-nunito">
+    <div class="flex flex-col h-screen">
+        <!-- Navbar -->
+        <div class="bg-gray-800 p-2 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">Language Translations</h1>
+            <div class="flex items-center">
+                <a class="text-lg mx-4 {% if request.resolver_match.url_name == 'home' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'home' %}">Home</a>
+                <a class="text-lg mx-4 {% if request.resolver_match.url_name == 'import_csv' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'custom_admin_login' %}?text=importing">Import CSV</a>
+
+                <a class="text-lg mx-4 {% if request.resolver_match.url_name == 'admindashboard' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'admindashboard' %}">Dashboard</a>
+                <a class="text-lg mx-4 {% if request.resolver_match.url_name == 'registrations' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'registrations' %}">Registrations</a>
+                <a class="text-lg mx-4 {% if request.resolver_match.url_name == 'translations' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'translations' %}">Translations</a>
+                <a class="text-lg mx-4 {% if request.resolver_match.url_name == 'adminreview' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'adminreview' %}">Reviews</a>
+                <button class="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 px-4 py-2 m-1 rounded btn-animated" onclick="window.location.href='{% url 'admin_login' %}'">Logout</button>
+                <button class="relative" onclick="toggleProfilePopup()">
+                    <div class="rounded-full bg-gray-600 text-white flex items-center justify-center" style="width: 40px; height: 40px;">
+                        A<!-- Display first letter of admin's name -->
+                    </div>
+                </button>
+                <button class="relative" onclick="toggleProfilePopup()">
+                <!-- Notification Bell -->
+                <div class="notification-bell" onclick="window.location.href='{% url 'notifications' %}'">
+                    <img src="{% static 'bell-icon1.png' %}" alt="Notification Logo" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; background-color: white;">
+                    <span class="badge" id="notification-badge"></span> <!-- Example notification count -->
+                </div>
+                </button>
+
+                <div class="profile-popup" id="profilePopup">
+                    <p>Admin Name: {{ request.session.admin_name }}</p>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-grow p-8">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <script>
+        function toggleProfilePopup() {
+            var popup = document.getElementById('profilePopup');
+            if (popup.style.display === 'none' || popup.style.display === '') {
+                popup.style.display = 'block';
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

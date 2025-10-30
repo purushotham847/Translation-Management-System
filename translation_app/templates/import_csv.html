@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+    <title>Import CSV Data</title>
+   
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans">
+    <div class="flex flex-col h-screen">
+        <div class="bg-gray-800 p-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">Import CSV Data</h1>
+            <a class="text-lg {% if request.resolver_match.url_name == 'admindashboard' %}text-green-400{% else %}text-gray-400{% endif %}" href="{% url 'admindashboard' %}">Dashboard</a>
+        </div>
+        
+        <div class="flex-grow flex items-center justify-center p-8">
+            <div class="w-full max-w-md"> 
+                
+                {% if messages %}
+                    <ul class="mt-4 mb-6"> 
+                        {% for message in messages %}
+                            <li class="bg-gray-700 text-green-400 p-2 rounded mb-2">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                
+                <div>
+                    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <div>
+                            <label for="language_proficiency" class="text-lg">Language Proficiency (Format: ENGLISH-KANNADA):</label>
+                            <input type="text" name="language_proficiency" id="language_proficiency" placeholder="Enter the direction" required class="mt-2 p-2 border border-gray-600 rounded bg-gray-700 text-gray-200 w-full" oninput="toUpperCase(this); checkLanguageProficiency(this.value)">
+                            <p class="text-sm text-gray-400 mt-1 mb-6">Note: Only one language direction data is allowed at once.</p>
+                        </div>
+                        
+                        <div>
+                            <label for="file" class="text-lg">Choose CSV file to upload:</label>
+                            <input type="file" name="file" accept=".csv" required class="mt-2 mb-6 p-2 border border-gray-600 rounded bg-gray-700 text-gray-200 w-full">
+                        </div>
+                
+                        <!-- Keyboard Details Section (Hidden by default) -->
+                        <div id="keyboardDetails" class="space-y-4  hidden">
+                            <div class="mb-2">
+                                <label for="keyboardId" class="text-lg">Keyboard Details  (Enter the keyboard details of the second/target language)</label>
+                                <input type="text" name="keyboardId" id="keyboardId" placeholder="Keyboard Id" class="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white" required>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" name="keyboardName" id="keyboardName" placeholder="Keyboard Name" class="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white" required>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" name="languageId" id="languageId" placeholder="Language Id" class="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white" required>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" name="languageName" id="languageName" placeholder="Language Name" class="w-full p-3 border border-gray-600 rounded bg-gray-700 text-white" required>
+                            </div>
+                            <div class="mb-2">
+                                <label for="keyboardFile" class="text-lg text-white">Choose keyboard file (JS extension) to upload:</label>
+                                <input type="file" name="keyboardFile" id="keyboardFile" accept=".js" required class="mt-2 mb-6 p-2 border border-gray-600 rounded bg-gray-700 text-gray-200 w-full">
+                            </div>
+                        </div>
+                
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200">Import</button>
+                    </form>
+            </div>
+        </div>
+    </div> <script>
+
+        function toUpperCase(input) {
+        input.value = input.value.toUpperCase();
+    }
+
+    function checkLanguageProficiency(value) {
+        console.log(value)
+        const keyboardDetailsSection = document.getElementById('keyboardDetails');
+        if (!value) {
+            keyboardDetailsSection.classList.add('hidden'); // Hide if input is empty
+            return;
+        }
+
+        fetch(`/check_language_proficiency/?lang_prof=${encodeURIComponent(value)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'  // Indicate AJAX request
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.exists)
+            if (data.exists) {
+                // If language_proficiency exists, hide keyboard details
+                keyboardDetailsSection.classList.add('hidden');
+                // Remove required attributes (optional, since hidden fields won't be submitted)
+                const fields = ['keyboardId', 'keyboardName', 'languageId', 'languageName', 'keyboardFile'];
+                fields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.removeAttribute('required');
+                });
+            } else {
+                // If language_proficiency doesn't exist, show keyboard details
+                keyboardDetailsSection.classList.remove('hidden');
+                // Ensure fields are required
+                const fields = ['keyboardId', 'keyboardName', 'languageId', 'languageName', 'keyboardFile'];
+                fields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.setAttribute('required', '');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error checking language proficiency:', error);
+            keyboardDetailsSection.classList.remove('hidden'); // Show on error as a fallback
+        });
+    }
+    </script>
+</body>
+</html>

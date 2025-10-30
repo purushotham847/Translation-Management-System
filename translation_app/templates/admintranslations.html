@@ -1,0 +1,582 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Job Assignment</title>
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <style>
+        .active {
+            background-color: #22c55e;
+            color: black;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-in-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        .selected-row {
+            background-color: #4a5568;
+        }
+        .batch-item:hover {
+            background-color: #4a5568;
+            cursor: pointer;
+        }
+                .scrollable-table {
+            max-height: 300px; /* Adjust height as needed */
+            overflow-y: auto;
+        }
+        .scrollable-table::-webkit-scrollbar {
+            width: 8px; /* Width of the scrollbar */
+        }
+        .scrollable-table::-webkit-scrollbar-thumb {
+            background-color: #888; /* Color of the scrollbar thumb */
+            border-radius: 10px; /* Rounded corners */
+        }
+        .scrollable-table::-webkit-scrollbar-thumb:hover {
+            background-color: #555; /* Color of the scrollbar thumb on hover */
+        }
+        #searchBar {
+    color: #4a4a4a; /* Dark gray color */
+}
+
+/* Highlight selected batch rows */
+.selected-batch-row {
+    background-color: #22c55e; /* Light green background for selected rows */
+    color: black; /* Adjust text color for better visibility */
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Error message styling */
+#batch-error {
+    color: #ff4d4f;
+    font-size: 14px;
+    display: none;
+}
+
+
+    </style>
+</head>
+
+<body class="bg-gray-900 font-roboto">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-40 bg-gray-800 text-white h-screen p-2 slide-in">
+            <h1 class="text-2xl font-bold mb-6">Language Translations</h1>
+            <div class="mb-2">
+                <h2 class="text-lg font-semibold mb-2">TRANSLATIONS</h2>
+                <button id="jobAssignmentBtn" class="bg-green-500 text-black px-4 py-2 mb-2 w-full hover:bg-green-600 transition">JOB ASSIGNMENT</button>
+                <button id="assignedJobsBtn" class="bg-black text-white px-4 py-2 mb-2 w-full hover:bg-gray-700 transition">
+                    <a href="{% url 'assigned_jobs' %}">Assigned Jobs</a>
+                </button>
+                <button id="allocateJobBtn" class="bg-black text-white px-4 py-2 mb-2 w-full hover:bg-gray-700 transition">
+                    <a href="{% url 'allocate_job' %}">Allocate Job</a>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="w-full p-2 fade-in">
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-white text-xl font-bold">Job Allocation</h2>
+
+
+                    <div>
+                        <label class="text-white" for="major_id">Select Major ID:</label>
+                        <select id="major_id" name="major_id" class="bg-gray-700 text-white rounded p-2"
+                                onchange="fetchLanguageProficiency()">
+                            <option value="">Select</option>
+                            {% for major in major_ids %}
+                            <option value="{{ major.major_id }}">{{ major.language }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-white" for="corpus_id">Language Proficiency:</label>
+                        <select id="corpus_id" name="corpus_id" class="bg-gray-700 text-white rounded p-2"
+                                onchange="filterTranslators(); fetchFileData();">
+                            <option value="">Select</option>
+                        </select>
+                    </div>
+
+
+                    <div class="flex space-x-4">
+                        <div class="text-white">Translator ID: <span id="selected-id" class="font-semibold"></span></div>
+                        <div class="text-white">Ratings: <span id="selected-rating" class="font-semibold"></span></div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="flex space-x-3 w-full">
+                    <!-- Left Table -->
+                    <div class="w-full">
+                        <div class="scrollable-table">
+                        <table class="w-full text-white border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="border-b border-gray-700 p-2 bg-gray-700">TRANSLATOR</th>
+                                    <th class="border-b border-gray-700 p-2 bg-gray-700">RATINGS</th>
+                                    <th class="border-b border-gray-700 p-2 bg-gray-700">EXPERIENCE</th>
+
+
+                                </tr>
+                            </thead>
+                            <tbody id="translator-table-body">
+                                {% for translator in translator_data %}
+                                <tr id="translator-{{ translator.t_id }}"
+                                    class="hover:bg-gray-700 transition cursor-pointer"
+                                    onclick="selectTranslator('{{ translator.t_id }}', '{{ translator.rating }}', '{{ translator.minor_job_id|default:'null' }}', this)">
+                                    <td class="border-b border-gray-700 p-2">{{ translator.t_id }}</td>
+                                    <td class="border-b border-gray-700 p-2">{{ translator.rating }}</td>
+                                    <td class="border-b border-gray-700 p-2">{{ translator.experience }} years</td>
+
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+
+                        </table>
+                        </div>
+                    </div>
+<div class="w-1/3">
+        <table class="w-full text-white border-collapse">
+                <thead>
+                    <tr>
+                        <th class="border-b border-gray-700 p-2 bg-gray-700">FILE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <select name="file_id" class="bg-gray-700 text-white rounded p-2 w-full" onchange="updateAvailableBatches()">
+                                <option value="">Select File</option>
+                                {% for file in file_data %}
+                                    <option value="{{ file.id }}">{{ file.generated_file_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="w-full text-white border-collapse mt-2">
+                <thead>
+                    <tr>
+                        <th class="border-b border-gray-700 p-2 bg-gray-700">PRIORITY</th>
+                    </tr>
+                </thead>
+                <tbody id="priority-table-body">
+                    <tr>
+                        <td>
+                            <select class="priority-select bg-gray-700 text-white p-2 w-full" onchange="updateAvailableBatches()">
+                                <option value="">Select Priority</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+
+
+    </div>
+                    <!-- Right Table -->
+
+                    <div class="w-2/6 scrollable-table">
+    <table id="available-batches" class="w-full text-white border-collapse">
+        <thead>
+            <tr>
+                <th class="border-b border-gray-700 p-2 bg-gray-700">AVAILABLE BATCHES</th>
+            </tr>
+        </thead>
+        <tbody id="batch-table-body">
+            <tr>
+                <td id="batch-message" class="border-b border-gray-700 p-2">Select proficiency and priority to fetch batches.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+                <!-- Batch Input and Submit Button -->
+<div class="flex justify-between align-right items-center w-2/5">
+    <div class="relative w-full">
+        <input id="batch-input" type="text"
+               class="bg-gray-700 text-white p-4 w-full mr-2 rounded"
+               placeholder="Selected Batch IDs (e.g., 1,2,3-5)">
+        <div id="batch-error" class="text-red-500 mt-2" style="display: none;">
+
+        </div>
+    </div>
+</div>
+
+
+                </div><div class="text-right">
+                                                    <button id="submit-batches-btn" class="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-600 transition"
+                            onclick="submitSelectedBatches()">SUBMIT</button></div>
+            </div>
+            <!-- Search Bar -->
+<div class="w-full p-1 fade-in">
+
+</div>
+
+<!-- Pending Jobs Table -->
+<div class="w-full p-1 fade-in">
+    <div class="bg-gray-800 p-1 rounded-lg">
+            <div class="bg-gray-800 p-2 rounded-lg mb-4">
+        <input type="text" id="searchBar" placeholder="Search Translator ID..." class="p-2 rounded-lg w-full">
+    </div>
+        <h2 class="text-white text-xl font-bold mb-4">Translator Current Details</h2>
+        <div class="scrollable-table">
+        <table class="w-full text-white border-collapse" id="pendingJobsTable">
+            <thead>
+                <tr>
+                    <th class="border-b border-gray-700 p-2 bg-gray-700">Sl. No</th>
+                    <th class="border-b border-gray-700 p-2 bg-gray-700">Translator ID</th>
+                    <th class="border-b border-gray-700 p-2 bg-gray-700">Language Proficiency</th>
+                    <th class="border-b border-gray-700 p-2 bg-gray-700">Assigned Jobs</th>
+                    <th class="border-b border-gray-700 p-2 bg-gray-700">Pending Jobs</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in pending_jobs_data %}
+                    <tr>
+                        <td class="border-b border-gray-700 p-2 text-center">{{ forloop.counter }}</td>
+                        <td class="border-b border-gray-700 p-2 text-center">{{ job.t_id }}</td>
+                        <td class="border-b border-gray-700 p-2 text-center">{{ job.language_profeciency }}</td>
+                        <td class="border-b border-gray-700 p-2 text-center">{{ job.assigned_jobs_count }}</td>
+                        <td class="border-b border-gray-700 p-2 text-center">{{ job.pending_count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+        </div>
+
+
+
+    </div>
+
+
+    <script>
+        let selectedTranslatorId = null;
+        let selectedProficiency = null;
+        let selectedBatches = new Set();
+
+function selectTranslator(translatorId, rating, minorJobId, row) {
+    // Update the selected translator ID
+    selectedTranslatorId = translatorId;
+    document.getElementById('selected-id').textContent = translatorId;
+    document.getElementById('selected-rating').textContent = rating;
+
+    // Clear the priority selection
+    const prioritySelect = document.querySelector('.priority-select');
+    if (prioritySelect) {
+        prioritySelect.value = ""; // Reset to default
+    }
+
+    // Update message based on minor_job_id
+    const batchMessage = document.getElementById('batch-message');
+    if (minorJobId === 'null' || !minorJobId) {
+        batchMessage.textContent = "Select proficiency and priority to fetch batches.";
+    } else {
+        batchMessage.textContent = `${translatorId} is a current user, check details below.`;
+    }
+
+    // Remove selected class from all rows
+    document.querySelectorAll('tr').forEach(tr => tr.classList.remove('selected-row'));
+
+    // Add selected class to the current row
+    row.classList.add('selected-row');
+}
+
+
+let selectedBatchIds = new Set(); // Track batches selected by clicking rows
+
+// Toggle batch selection on row click
+function addBatchToInput(batchId) {
+    const batchInput = document.getElementById('batch-input');
+    const batchRow = document.querySelector(`#batch-table-body tr[data-batch-id="${batchId}"]`);
+
+    if (selectedBatchIds.has(batchId)) {
+        // Deselect the batch if it's already selected
+        selectedBatchIds.delete(batchId);
+        if (batchRow) {
+            batchRow.classList.remove('selected-batch-row');
+        }
+    } else {
+        // Select the batch
+        selectedBatchIds.add(batchId);
+        if (batchRow) {
+            batchRow.classList.add('selected-batch-row');
+        }
+    }
+
+    // Update the input field with all selected batches
+    batchInput.value = Array.from(selectedBatchIds).join(', ');
+
+    // Ensure manual input and selected batches sync properly
+    const manualBatches = new Set(batchInput.value.split(',').map(id => id.trim()).filter(Boolean));
+
+    // Remove any batch IDs that have been deselected from the manual input
+    manualBatches.forEach((id) => {
+        if (!selectedBatchIds.has(id)) {
+            manualBatches.delete(id);
+        }
+    });
+
+    // Finalize and update the input field
+    batchInput.value = Array.from(selectedBatchIds).join(', ');
+}
+
+
+
+
+// Validate and process batches on submit
+function submitSelectedBatches() {
+    if (!selectedTranslatorId) {
+        alert('Please select a translator first');
+        return;
+    }
+
+    const batchInput = document.getElementById('batch-input');
+    const batchInputValue = batchInput.value.trim();
+    const proficiency = document.getElementById('corpus_id').value;
+
+    if (!batchInputValue || !proficiency) {
+        alert('Please select a proficiency and enter batch IDs.');
+        return;
+    }
+
+    // Prepare form data for submission
+    const formData = new FormData();
+    formData.append('translator_id', selectedTranslatorId);
+    formData.append('batch_ids', batchInputValue);
+    formData.append('proficiency', proficiency);
+
+    // Send assignment request (validation and assignment handled on the backend)
+    fetch("{% url 'assign_batch' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Batch assignment successful!');
+                document.getElementById('batch-input').value = '';
+                location.reload(); // Refresh the page after successful assignment
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the batch assignment.');
+        });
+}
+
+// Display error message
+function showErrorMessage(message) {
+    const errorDiv = document.getElementById('batch-error');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+
+    // Hide the error message after 3 seconds
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 3000);
+}
+
+
+
+
+
+function updateAvailableBatches() {
+    const proficiency = document.getElementById('corpus_id').value;
+    const prioritySelect = document.querySelector('.priority-select');
+    const priority = prioritySelect ? prioritySelect.value : null;
+    const fileSelect = document.querySelector('select[name="file_id"]');
+    const fileId = fileSelect ? fileSelect.value : null;
+    const batchTableBody = document.getElementById('batch-table-body');
+
+    if (proficiency && priority && fileId) {
+        // Show loading message while fetching batches
+        batchTableBody.innerHTML = '<tr><td class="border-b border-gray-700 p-2">Loading batches...</td></tr>';
+
+        fetch(`/fetch_available_batches/?proficiency=${encodeURIComponent(proficiency)}&priority=${encodeURIComponent(priority)}&file_id=${encodeURIComponent(fileId)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.batch_ids && data.batch_ids.length > 0) {
+                    batchTableBody.innerHTML = '';
+                    data.batch_ids.forEach(batchId => {
+                        const row = `
+                            <tr data-batch-id="${batchId}" class="border-b border-gray-700 p-2 cursor-pointer hover:bg-gray-700"
+                                onclick="addBatchToInput('${batchId}')">
+                                <td>${batchId}</td>
+                            </tr>`;
+                        batchTableBody.innerHTML += row;
+                    });
+                } else {
+                    batchTableBody.innerHTML = '<tr><td class="border-b border-gray-700 p-2">No batches available</td></tr>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching available batches:', error);
+                batchTableBody.innerHTML = '<tr><td class="border-b border-gray-700 p-2">Error loading batches</td></tr>';
+            });
+    } else {
+        batchTableBody.innerHTML = '<tr><td class="border-b border-gray-700 p-2">Select proficiency, priority, and file first.</td></tr>';
+    }
+}
+
+
+function fetchLanguageProficiency() {
+    const majorId = document.getElementById('major_id').value;
+
+    if (majorId) {
+        fetch(`/translations_view/?major_id=${majorId}`)
+            .then(response => response.json())
+            .then(data => {
+                const proficiencySelect = document.getElementById('corpus_id');
+                proficiencySelect.innerHTML = '<option value="">Select</option>';
+                data.corpus_data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.language_profeciency; // Ensure this matches the expected value
+                    option.textContent = item.language_profeciency; // Display the proficiency
+                    proficiencySelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching language proficiency:', error));
+    }
+}
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        document.getElementById('searchBar').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const table = document.getElementById('pendingJobsTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
+                const cells = rows[i].getElementsByTagName('td');
+                const translatorId = cells[1].textContent.toLowerCase(); // Assuming Translator ID is in the second column
+
+                if (translatorId.includes(searchValue)) {
+                    rows[i].style.display = ''; // Show row
+                } else {
+                    rows[i].style.display = 'none'; // Hide row
+                }
+            }
+        });
+
+
+
+
+
+
+function filterTranslators() {
+    const proficiency = document.getElementById('corpus_id').value;
+
+    const translatorTable = document.getElementById('translator-table-body');
+    translatorTable.innerHTML = ''; // Clear existing rows
+
+    if (proficiency) {
+        fetch(`/translations_view/?proficiency=${encodeURIComponent(proficiency)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.translator_data && data.translator_data.length > 0) {
+                    data.translator_data.forEach(translator => {
+                        // Add the row to the table
+                        const row = `
+                            <tr id="translator-${translator.t_id}"
+                                class="hover:bg-gray-700 transition cursor-pointer"
+                                onclick="selectTranslator('${translator.t_id}', '${translator.rating}', ${translator.minor_job_id ? `'${translator.minor_job_id}'` : 'null'}, this)">
+                                <td class="border-b border-gray-700 p-2">${translator.t_id}</td>
+                                <td class="border-b border-gray-700 p-2">${translator.rating}</td>
+                                <td class="border-b border-gray-700 p-2">${translator.experience} years</td>
+                            </tr>`;
+                        translatorTable.innerHTML += row;
+                    });
+                } else {
+                    translatorTable.innerHTML = '<tr><td colspan="3" class="text-center">No translators found for the selected proficiency.</td></tr>';
+                }
+            })
+            .catch(error => console.error('Error fetching translators:', error));
+    }
+}
+
+   function fetchFileData() {
+    const proficiency = document.getElementById('corpus_id').value;
+
+    if (proficiency) {
+        fetch(`/translations_view/?proficiency=${encodeURIComponent(proficiency)}`)
+            .then(response => response.json())
+            .then(data => {
+                const fileSelect = document.querySelector('select[name="file_id"]');
+                fileSelect.innerHTML = '<option value="">Select File</option>';
+
+                if (data.file_data && data.file_data.length > 0) {
+                    data.file_data.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file.id;
+                        option.textContent = file.generated_file_name;
+                        fileSelect.appendChild(option);
+                    });
+                } else {
+                    fileSelect.innerHTML = '<option value="">No files available</option>';
+                }
+            })
+            .catch(error => console.error('Error fetching file data:', error));
+    }
+}
+
+
+
+    </script>
+</body>
+</html>
+{% endblock %}

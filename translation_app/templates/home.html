@@ -1,0 +1,99 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Language Translator</title>
+  <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+  <style>
+   @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url('https://r4.wallpaperflare.com/wallpaper/108/648/963/texture-wallpaper-c94068ed311a4d7ba637487f2001f6fd.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow: hidden;
+        }
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) 100%);
+            z-index: -1;
+            animation: animateBackground 20s linear infinite;
+        }
+        @keyframes animateBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .fade-in {
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .neon-button {
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            text-transform: uppercase;
+            text-decoration: none;
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            border-radius: 5px;
+            box-shadow: 0 0 5px #ff00cc, 0 0 10px #ff00cc, 0 0 20px #ff00cc, 0 0 40px #ff00cc;
+            transition: 0.2s;
+        }
+        .neon-button:hover {
+            box-shadow: 0 0 20px #ff00cc, 0 0 40px #ff00cc, 0 0 60px #ff00cc, 0 0 80px #ff00cc;
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .text-gradient {
+            background: linear-gradient(45deg, #ff00cc, #3333ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-black text-white relative">
+  <div class="background-animation"></div>
+  
+  <div class="flex items-center justify-center w-full">
+    <!-- Left Container - Added padding-left to move it right -->
+    <div class="text-center p-8 bg-black bg-opacity-50 rounded-lg fade-in  pl-12">
+      <h1 class="text-5xl font-bold mb-4 text-gradient">Language Translator</h1>
+      <h2 class="text-4xl font-bold mb-6 text-gradient">Welcome to Language Translator!</h2>
+      <p class="text-lg mb-4">Break the Language Barrier, Communicate with the World</p>
+      <p class="text-lg mb-4">At Translations,</p>
+      <p class="text-lg mb-6">
+        We offer fast and accurate translations to help you communicate seamlessly across languages.<br> 
+        Whether you're translating words, sentences, or entire documents, <br>our platform makes it easy 
+        to connect with people from different cultures and regions.
+      </p>
+      <a class="neon-button" href="{% url 'logindashboard' %}">Login</a>
+      <a class="neon-button" style="margin: 30px;" href="{% url 'user_registration' %}">Register</a>
+    </div>
+
+    <!-- Right Container -->
+    <div class="w-1/2 flex justify-center items-center">
+      <img alt="A digital globe representing global communication" class="fade-in floating" height="800" 
+           src="/static/images/animation.jpg" width="600"/>
+    </div>
+  </div>
+</body>
+</html>

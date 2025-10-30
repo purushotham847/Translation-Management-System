@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+
+    <!-- Google Fonts (Nunito) -->
+    <link href="{% static 'css/nunito.css' %}" rel="stylesheet">
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+    <title>Admin Login</title>
+</head>
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center h-screen">
+
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+        <h1 class="text-3xl font-bold mb-4 text-center">Verify Credentials</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            <label for="username" class="block text-lg mb-1">Username:</label>
+            <input type="text" name="username" required class="w-full p-2 mb-4 border border-gray-600 rounded bg-gray-700 text-gray-200">
+            
+            <label for="password" class="block text-lg mb-1">Password:</label>
+            <input type="password" name="password" required class="w-full p-2 mb-4 border border-gray-600 rounded bg-gray-700 text-gray-200">
+            
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transition duration-200">Verify</button>
+        </form>
+
+        {% if messages %}
+            <ul class="mt-4">
+                {% for message in messages %}
+                    <li class="bg-red-600 text-white p-2 rounded mb-2">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        {% if success %}
+            <div id="redirect-message" class="mt-4 text-green-500 text-center">
+                Credentials verified! Redirecting to the admin dashboard...
+            </div>
+            <script>
+                setTimeout(function() {
+                    window.location.href = "{{ admindashboard }}";  
+                }, 3000); // 3 seconds delay
+            </script>
+        {% endif %}
+    </div>
+</body>
+</html>
